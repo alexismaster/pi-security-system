@@ -7,8 +7,7 @@
  */
 
 
-var cv = require("opencv");
-var logger = require("./src/logger.js");
+var logger = require("i-logger");
 var path = require("path");
 var fs = require("fs");
 
@@ -47,51 +46,56 @@ global.App = {
 };
 
 
+if ((require("os")).arch() === "arm") {
+	var Camera = require("./src/Camera.js");
 
-var Camera = require("./src/Camera.js");
+	if (global.config.cams) {
+		global.config.cams.map(function (cam) {
+			global["camera" + cam.index] = new Camera(cam);
+		});
+	}
 
-if (global.config.cams) {
-	global.config.cams.map(function (cam) {
-		global["camera" + cam.index] = new Camera(cam);
-	});
+	var iteration = 0;
+
+	(function _blink () {
+		var GPIO  = require("./src/GPIO.js");
+		var memMB = process.memoryUsage().rss / 1048576;
+		logger.log("start capture... memory usege:", memMB.toFixed(3) + " Mb");  
+		GPIO.ledOn(pin);
+		fs.writeFileSync("/sys/class/gpio/gpio23/value", "1");
+
+
+	  if (++iteration > 1) camera0.getImage(function (image) {
+			if (App.image) App.image.release();
+			App.image = image;
+			//delete require.cache[require.resolve('./detector.js')];
+			var detector = require("./detector.js");
+			if (detector(image)) {
+				logger.log("motion detected!");
+			}
+			//image.release();
+		}); 
+
+		setTimeout(function () {
+			GPIO.ledOff(pin);
+			setTimeout(_blink, MINUTE);
+		}, 5*SECOND);
+
+	})();
+}
+else {
+	logger.warning("Код выполняется не на малине");
 }
 
-
-
-var iteration = 0;
-
-(function _blink () {
-	var GPIO  = require("./src/GPIO.js");
-	var memMB = process.memoryUsage().rss / 1048576;
-	logger.log("start capture... memory usege:", memMB.toFixed(3) + " Mb");  
-	GPIO.ledOn(pin);
-	fs.writeFileSync("/sys/class/gpio/gpio23/value", "1");
-
-
-  if (++iteration > 1) camera0.getImage(function (image) {
-		if (App.image) App.image.release();
-		App.image = image;
-		//delete require.cache[require.resolve('./detector.js')];
-		var detector = require("./detector.js");
-		if (detector(image, cv)) {
-			logger.log("motion detected!");
-		}
-		//image.release();
-	}); 
-
-	setTimeout(function () {
-		GPIO.ledOff(pin);
-		setTimeout(_blink, MINUTE);
-	}, 5*SECOND);
-
-})();
 
 
 
 /**
  * web server
  */
-require("./src/WebServer.js")(80);
+
+var server = require("i-server").bind(8080, "../../assets/");
+//var server = require("./src/i-server").bind(8080, "assets");
 
 
 

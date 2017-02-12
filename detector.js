@@ -1,10 +1,10 @@
 "use strict";
 
-
+var cv = require("opencv");
 var logger = require("./src/logger.js");
 
 
-module.exports = function (image, cv) {
+module.exports = function (image) {
   image.convertGrayscale();
   image.gaussianBlur([7,7]);
 
