@@ -2,6 +2,7 @@
 
 // Camera.js
 
+var cv = require("opencv");
 
 module.exports = function Camera(cam) {
 	var camera = new cv.VideoCapture(cam.index);

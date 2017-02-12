@@ -1,6 +1,9 @@
 "use strict";
 
 
+var logger = require("./src/logger.js");
+
+
 module.exports = function (image, cv) {
   image.convertGrayscale();
   image.gaussianBlur([7,7]);
@@ -25,7 +28,7 @@ module.exports = function (image, cv) {
   // https://searchcode.com/codesearch/view/75662671/
   //var contours = diff.copy().findContours();
   var contours = diff_t.findContours();
-  console.log("counturs count:", contours.size());
+  logger.debug("counturs count:", contours.size());
   diff_t.release();
 
   // Дата и время

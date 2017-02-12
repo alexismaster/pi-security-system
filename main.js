@@ -9,6 +9,8 @@
 
 var cv = require("opencv");
 var logger = require("./src/logger.js");
+var path = require("path");
+var fs = require("fs");
 
 
 const SECOND = 1000;
@@ -49,7 +51,7 @@ global.App = {
 var Camera = require("./src/Camera.js");
 
 if (global.config.cams) {
-	global.config.map(function (cam) {
+	global.config.cams.map(function (cam) {
 		global["camera" + cam.index] = new Camera(cam);
 	});
 }
@@ -61,18 +63,18 @@ var iteration = 0;
 (function _blink () {
 	var GPIO  = require("./src/GPIO.js");
 	var memMB = process.memoryUsage().rss / 1048576;
-	console.log("start capture...", memMB);  
+	logger.log("start capture... memory usege:", memMB.toFixed(3) + " Mb");  
 	GPIO.ledOn(pin);
 	fs.writeFileSync("/sys/class/gpio/gpio23/value", "1");
 
 
-	if (++iteration > 1) camera0.getImage(function (image) {
+  if (++iteration > 1) camera0.getImage(function (image) {
 		if (App.image) App.image.release();
 		App.image = image;
 		//delete require.cache[require.resolve('./detector.js')];
 		var detector = require("./detector.js");
 		if (detector(image, cv)) {
-			console.log("motion detected!");
+			logger.log("motion detected!");
 		}
 		//image.release();
 	}); 
