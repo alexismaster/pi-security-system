@@ -1,0 +1,13 @@
+
+
+module.exports = {
+	
+	// Камеры
+	"cams": [
+		  {"index": 0, "size": [640,480], "lamp-pin": 23}
+		, {"index": 1, "size": [640,480], "lamp-pin": none}
+	],
+
+	// WEB-сервер
+	"webServer": {"port": 80, "auth": {"login": "demo", "password": "demo"}}
+};

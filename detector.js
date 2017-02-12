@@ -1,5 +1,4 @@
-
-
+"use strict";
 
 
 module.exports = function (image, cv) {
@@ -26,7 +25,7 @@ module.exports = function (image, cv) {
   // https://searchcode.com/codesearch/view/75662671/
   //var contours = diff.copy().findContours();
   var contours = diff_t.findContours();
-  console.log('counturs count:', contours.size());
+  console.log("counturs count:", contours.size());
   diff_t.release();
 
   // Дата и время
