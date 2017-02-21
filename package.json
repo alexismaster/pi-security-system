@@ -1,6 +1,6 @@
 {
   "name": "security_system",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "release": "12.02.2017",
   "description": "",
   "main": "index.js",
@@ -13,6 +13,7 @@
     "colors": "^1.1.2",
     "i-logger": "0.0.1",
     "i-server": "0.0.2",
-    "opencv": "^6.0.0"
+    "opencv": "^6.0.0",
+    "request": "^2.79.0"
   }
 }

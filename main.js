@@ -84,7 +84,7 @@ if ((require("os")).arch() === "arm") {
 	})();
 }
 else {
-	logger.warning("Код выполняется не на малине");
+	logger.warning("Код выполняется не на малине. Камеры и GPIO работать не будут.");
 }
 
 
@@ -94,8 +94,27 @@ else {
  * web server
  */
 
-var server = require("i-server").bind(8080, "../../assets/");
-//var server = require("./src/i-server").bind(8080, "assets");
+if ((require("os")).arch() === "arm") {
+	var server = require("i-server").bind(8080, "../../assets/");
+} else {
+	var server = require("./src/i-server").bind(8080, "./../../assets/");
+}
+
+server.on("/camera-1", "GET", function (request, response) {
+	server.reply(response, "response response ");
+});
+
+server.on("/camera-2", "GET", function (request, response) {
+	server.reply(response, "response response ");
+});
+
+server.on("/check-sms-balance", "GET", function (request, response) {
+	var smsc = require("./smsc-ru/main.js");
+	smsc.balance(global.config.sms.login, global.config.sms.password, function (balance) {
+		server.reply(response, "Баланс: " + balance + " руб");
+	});
+});
+
 
 
 
