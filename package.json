@@ -15,6 +15,6 @@
     "i-server": "0.0.2",
     "opencv": "^6.0.0",
     "request": "^2.79.0",
-    "smsc-ru": "file:smsc-ru"
+    "smsc-ru": "0.0.2"
   }
 }
