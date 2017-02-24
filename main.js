@@ -43,9 +43,18 @@ global.App = {
 	image : null,   // Картинка с первой камеры
 	led_1 : false,  // Глобальное состояние освещения на первом этаже
 	led_2 : false,  // Глобальное состояние освещения на втором этаже
+	memory: null,
 
-	isPi: function () {
-		return ((require("os")).arch() === "arm");
+	isPi: (function () {
+		var result = ((require("os")).arch() === "arm");
+		return function () {
+			return result;
+		};
+	})(),
+
+	getMemory: function () {
+		this.memory = (process.memoryUsage().rss / 1048576).toFixed(3);
+		return this.memory;
 	}
 };
 
@@ -63,11 +72,8 @@ if (App.isPi()) {
 
 	(function _blink () {
 		var GPIO  = require("./src/GPIO.js");
-		var memMB = process.memoryUsage().rss / 1048576;
-		logger.log("start capture... memory usege:", memMB.toFixed(3) + " Mb");  
+		logger.log("start capture... memory usege:", App.getMemory() + " Mb");  
 		GPIO.ledOn(pin);
-		//fs.writeFileSync("/sys/class/gpio/gpio23/value", "1");
-
 
 	  if (++iteration > 1) camera0.getImage(function (image) {
 			if (App.image) App.image.release();
@@ -104,7 +110,6 @@ if (App.isPi()) {
 }
 
 server.on("/camera-1", "GET", function (request, response) {
-	//server.reply(response, "response response ");
 	if (App.image) {
 		response.writeHead(200, {"Content-Type": "image/jpeg", "Cache-Control": "must-revalidate, max-age=0"});
 		response.end(App.image.toBuffer());
@@ -115,11 +120,18 @@ server.on("/camera-1", "GET", function (request, response) {
 });
 
 server.on("/camera-2", "GET", function (request, response) {
-	server.reply(response, "response response ");
+	if (!App.isPi() || typeof camera1 === "undefined") {
+		server.reply(response, "response response ");
+		return;
+	}
+	camera1.getImage(function (image) {
+		response.writeHead(200, {"Content-Type": "image/jpeg", "Cache-Control": "must-revalidate, max-age=0"});
+		response.end(image.toBuffer());
+		//image.release();
+	});
 });
 
 server.on("/check-sms-balance", "GET", function (request, response) {
-	//var smsc = require("./smsc-ru/main.js");
 	var smsc = require("smsc-ru");
 	smsc.balance(global.config.sms.login, global.config.sms.password, function (balance) {
 		server.reply(response, "Баланс: " + balance + " руб");
@@ -127,7 +139,7 @@ server.on("/check-sms-balance", "GET", function (request, response) {
 });
 
 server.on("/info", "GET", function (request, response) {
-	var info = {"led-1": (App.led_1 ? "on" : "off"), "led-2": "off"};
+	var info = {"led_1": (App.led_1 ? "on" : "off"), "led_2": "off", "memory": App.getMemory()};
 	server.reply(response, "var INFO = " + JSON.stringify(info));
 });
 

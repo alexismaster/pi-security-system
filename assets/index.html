@@ -3,7 +3,9 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Document</title>
+	<link rel="stylesheet" href="index.css">
 	<script src="https://unpkg.com/vue/dist/vue.js"></script>
+	<script type="text/javascript" src="/Ajax.js"></script>
 	<script type="text/javascript" src="/info"></script>
 </head>
 <body>
@@ -14,7 +16,6 @@
 			Свет на первом этаже:
 			<label v-on:click="led">On<input type="radio" name="led_1" value="on" v-model="led_1"></label>
 			<label v-on:click="led" >Off<input type="radio" name="led_1" value="off" v-model="led_1"></label>
-			<!-- {{led_1}} -->
 		</p>
 		<p>
 			Свет на втором этаже:
@@ -23,6 +24,9 @@
 		</p>
 		<p>
 			<a href="/check-sms-balance">Проверка баланса на SMS-сервисе</a>
+		</p>
+		<p>
+			Использование оперативной памяти: {{memory}} Mb
 		</p>
 	</div>
 	<script type="text/javascript" src="/index.js"></script>
