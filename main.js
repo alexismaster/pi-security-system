@@ -4,12 +4,13 @@
  * main
  * 
  * sudo node main.js config.js.example
+ * sudo node main.js config.js
  */
 
 
+var path   = require("path");
+var fs     = require("fs");
 var logger = require("i-logger");
-var path = require("path");
-var fs = require("fs");
 
 
 const SECOND = 1000;
@@ -26,23 +27,22 @@ if (process.argv.length < 3) {
 var configPath = path.join(__dirname, process.argv[2]);
 logger.log("configPath:", configPath);
 
-
 // Конфиг не существует
 if (!fs.existsSync(configPath)) {
 	logger.error("Конфиг не существует:", configPath);
 	process.exit(1);
 }
 
-
 global.config = require(configPath);
+
 
 
 var pin = 23;
 
-
 global.App = {
-	image : null,  // Картинка с первой камеры
-	led_1 : false,  // Глобальное состояние освещения
+	image : null,   // Картинка с первой камеры
+	led_1 : false,  // Глобальное состояние освещения на первом этаже
+	led_2 : false,  // Глобальное состояние освещения на втором этаже
 
 	isPi: function () {
 		return ((require("os")).arch() === "arm");
@@ -93,19 +93,25 @@ else {
 
 
 
-
 /**
  * web server
  */
 
-if ((require("os")).arch() === "arm") {
+if (App.isPi()) {
 	var server = require("i-server").bind(8080, "../../assets/");
 } else {
 	var server = require("./src/i-server").bind(8080, "./../../assets/");
 }
 
 server.on("/camera-1", "GET", function (request, response) {
-	server.reply(response, "response response ");
+	//server.reply(response, "response response ");
+	if (App.image) {
+		response.writeHead(200, {"Content-Type": "image/jpeg", "Cache-Control": "must-revalidate, max-age=0"});
+		response.end(App.image.toBuffer());
+		return;
+	}
+	response.writeHead(200, {"Content-Type": "text/plain"});
+	response.end("image not found");
 });
 
 server.on("/camera-2", "GET", function (request, response) {
@@ -113,14 +119,15 @@ server.on("/camera-2", "GET", function (request, response) {
 });
 
 server.on("/check-sms-balance", "GET", function (request, response) {
-	var smsc = require("./smsc-ru/main.js");
+	//var smsc = require("./smsc-ru/main.js");
+	var smsc = require("smsc-ru");
 	smsc.balance(global.config.sms.login, global.config.sms.password, function (balance) {
 		server.reply(response, "Баланс: " + balance + " руб");
 	});
 });
 
 server.on("/info", "GET", function (request, response) {
-	var info = {"led-1": "on", "led-2": "off"};
+	var info = {"led-1": (App.led_1 ? "on" : "off"), "led-2": "off"};
 	server.reply(response, "var INFO = " + JSON.stringify(info));
 });
 
@@ -137,8 +144,6 @@ server.on("/set-led", "POST", function (request, response) {
 	}
 	server.reply(response, "/set-led");
 });
-
-
 
 
 

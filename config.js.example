@@ -9,5 +9,7 @@ module.exports = {
 	],
 
 	// WEB-сервер
-	"webServer": {"port": 80, "auth": {"login": "demo", "password": "demo"}}
+	"webServer": {"port": 80, "auth": {"login": "demo", "password": "demo"}},
+
+	"sms": {"login": "demo", "password": "demo"}
 };
