@@ -3,22 +3,28 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Document</title>
+	<script src="https://unpkg.com/vue/dist/vue.js"></script>
+	<script type="text/javascript" src="/info"></script>
 </head>
 <body>
-	<p><a href="/camera-1">Камера-1 (первый этаж)</a></p>
-	<p><a href="/camera-2">Камера-2 (второй этаж)</a></p>
-	<p>
-		Свет на первом этаже:
-		<label>On<input type="radio" name="led-1"></label>
-		<label>Off<input type="radio" name="led-1" checked="checked"></label>
-	</p>
-	<p>
-		Свет на втором этаже:
-		<label>On<input type="radio" name="led-2"></label>
-		<label>Off<input type="radio" name="led-2" checked="checked"></label>
-	</p>
-	<p>
-		<a href="/check-sms-balance">Проверка баланса на SMS-сервисе</a>
-	</p>
+	<div id="app">
+		<p><a href="/camera-1">Камера-1 (первый этаж)</a></p>
+		<p><a href="/camera-2">Камера-2 (второй этаж)</a></p>
+		<p>
+			Свет на первом этаже:
+			<label v-on:click="led">On<input type="radio" name="led_1" value="on" v-model="led_1"></label>
+			<label v-on:click="led" >Off<input type="radio" name="led_1" value="off" v-model="led_1"></label>
+			<!-- {{led_1}} -->
+		</p>
+		<p>
+			Свет на втором этаже:
+			<label v-on:click="led">On<input type="radio" name="led_2" value="on" v-model="led_2"></label>
+			<label v-on:click="led">Off<input type="radio" name="led_2" value="off" v-model="led_2"></label>
+		</p>
+		<p>
+			<a href="/check-sms-balance">Проверка баланса на SMS-сервисе</a>
+		</p>
+	</div>
+	<script type="text/javascript" src="/index.js"></script>
 </body>
 </html>

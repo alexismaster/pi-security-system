@@ -1,7 +1,7 @@
 "use strict";
 
-var cv = require("opencv");
-var logger = require("./src/logger.js");
+var cv     = require("opencv");
+var logger = require("i-logger");
 
 
 module.exports = function (image) {
@@ -50,7 +50,4 @@ module.exports = function (image) {
 
   image.putText("motion not detected", 10, 450, "HERSEY_SIMPLEX", [255,255,255], 0.5, 1);
   return false;
-}
-
-
-
+};
