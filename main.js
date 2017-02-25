@@ -15,6 +15,7 @@ var logger = require("i-logger");
 
 const SECOND = 1000;
 const MINUTE = 60*SECOND;
+const START_TIME = (new Date).valueOf();
 
 
 // Не укаазн конфиг
@@ -44,6 +45,10 @@ global.App = {
 	led_1 : false,  // Глобальное состояние освещения на первом этаже
 	led_2 : false,  // Глобальное состояние освещения на втором этаже
 	memory: null,
+
+	sensors: {
+		cv: true
+	},
 
 	isPi: (function () {
 		var result = ((require("os")).arch() === "arm");
@@ -139,7 +144,15 @@ server.on("/check-sms-balance", "GET", function (request, response) {
 });
 
 server.on("/info", "GET", function (request, response) {
-	var info = {"led_1": (App.led_1 ? "on" : "off"), "led_2": "off", "memory": App.getMemory()};
+	var os = require("os");
+	var info = {
+		  "led_1"  : (App.led_1 ? "on" : "off")
+		, "led_2"  : "off"
+		, "memory" : App.getMemory()
+		, "uptime" : (new Date).valueOf() - START_TIME
+		, "freemem": os.freemem()
+		, "sensors": App.sensors
+	};
 	server.reply(response, "var INFO = " + JSON.stringify(info));
 });
 

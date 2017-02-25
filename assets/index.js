@@ -6,6 +6,8 @@ var app = new Vue({
 		led_1: "off",
 		led_2: "off",
 		memory: 0,
+		uptime: 0,
+		freemem: 0,
 	},
 	methods: {
 		led: function (event) {
