@@ -12,16 +12,9 @@ var path   = require("path");
 var fs     = require("fs");
 var logger = require("i-logger");
 
-# Инициализация порта
-// echo "23" > /sys/class/gpio/export
-// echo "out" > /sys/class/gpio/gpio23/direction
 
-fs.writeFileSync("/sys/class/gpio/export", "23");
-fs.writeFileSync("/sys/class/gpio/gpio23/direction", "out");
-
-
-const SECOND = 1000;
-const MINUTE = 60*SECOND;
+const SECOND     = 1000;
+const MINUTE     = 60*SECOND;
 const START_TIME = (new Date).valueOf();
 
 
@@ -47,15 +40,17 @@ global.config = require(configPath);
 
 var pin = 23;
 
+if (!fs.existsSync("/sys/class/gpio/gpio"+pin+"/direction")) {
+  fs.writeFileSync("/sys/class/gpio/export", pin);
+  fs.writeFileSync("/sys/class/gpio/gpio"+pin+"/direction", "out");
+}
+
+
 global.App = {
 	image : null,   // Картинка с первой камеры
 	led_1 : false,  // Глобальное состояние освещения на первом этаже
 	led_2 : false,  // Глобальное состояние освещения на втором этаже
 	memory: null,
-
-	sensors: {
-		cv: true
-	},
 
 	isPi: (function () {
 		var result = ((require("os")).arch() === "arm");
@@ -116,9 +111,9 @@ else {
  */
 
 if (App.isPi()) {
-	var server = require("i-server").bind(8080, "../../assets/");
+	var server = require("i-server").bind(80, "../../assets/");
 } else {
-	var server = require("./src/i-server").bind(8080, "./../../assets/");
+	var server = require("./src/i-server").bind(80, "./../../assets/");
 }
 
 server.on("/camera-1", "GET", function (request, response) {
@@ -150,18 +145,25 @@ server.on("/check-sms-balance", "GET", function (request, response) {
 	});
 });
 
+/*
 server.on("/info", "GET", function (request, response) {
-	var os = require("os");
-	var info = {
-		  "led_1"  : (App.led_1 ? "on" : "off")
-		, "led_2"  : "off"
-		, "memory" : App.getMemory()
-		, "uptime" : (new Date).valueOf() - START_TIME
-		, "freemem": os.freemem()
-		, "sensors": App.sensors
-	};
+	var info = {"led_1": (App.led_1 ? "on" : "off"), "led_2": "off", "memory": App.getMemory()};
 	server.reply(response, "var INFO = " + JSON.stringify(info));
 });
+*/
+server.on("/info", "GET", function (request, response) {
+    var os = require("os");
+    var info = {
+        "led_1"  : (App.led_1 ? "on" : "off")
+      , "led_2"  : "off"
+      , "memory" : App.getMemory()
+      , "uptime" : (new Date).valueOf() - START_TIME
+      , "freemem": os.freemem()
+      , "sensors": App.sensors
+    };
+    server.reply(response, "var INFO = " + JSON.stringify(info));
+});
+
 
 server.on("/set-led", "POST", function (request, response) {
 	if (request.json && request.json.name && request.json.name === "led_1") {
