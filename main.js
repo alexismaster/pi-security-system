@@ -12,6 +12,13 @@ var path   = require("path");
 var fs     = require("fs");
 var logger = require("i-logger");
 
+# Инициализация порта
+// echo "23" > /sys/class/gpio/export
+// echo "out" > /sys/class/gpio/gpio23/direction
+
+fs.writeFileSync("/sys/class/gpio/export", "23");
+fs.writeFileSync("/sys/class/gpio/gpio23/direction", "out");
+
 
 const SECOND = 1000;
 const MINUTE = 60*SECOND;
