@@ -178,7 +178,7 @@ if (global.config.sensors) {
 
 		if (settings.pin > 0) {
 			addRoute("sensors-journal/" + settings.pin, "GET", function (request, response) {
-				server.reply(response, sensor.getJournal());
+				this.reply(response, sensor.getJournal());
 			});
 		}
 
