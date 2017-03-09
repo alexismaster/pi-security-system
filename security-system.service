@@ -1,0 +1,59 @@
+# 
+# Шаблон конфига службы
+# 
+# Для настройки на конечной машине нужно:
+# =======================================
+# 
+# 1) Переименовать конфиг
+#    cp security-system.service.example security-system.service
+# 
+# 2) Отредактировать ExecStart подставив путь к node и main.js
+#    Чтобы узнать путь к node нужно выполнить "whereis node"
+# 
+# 3) Отредактировать WorkingDirectory указав путь до каталога
+# 	 в котором содержится main.js
+# 
+# 4) Скопировать конфиг в "/etc/systemd/system/"
+# sudo cp security-system.service /etc/systemd/system/security-system.service
+# 
+# 5) Запустить службу
+# sudo systemctl daemon-reload
+# sudo systemctl enable security-system
+# 
+# 
+# Полезные команды
+# ================
+# 
+# Проверка состояния
+# sudo systemctl status security-system
+# 
+# Перезапуск, остановка
+# sudo systemctl start security-system
+# sudo systemctl stop security-system
+# sudo systemctl restart security-system
+# 
+# Просмотр логов
+# sudo journalctl -u security-system
+# sudo tail -f /var/log/syslog | grep 'security-system'
+# sudo nano /etc/logrotate.d/rsyslog
+# 
+
+[Unit]
+Description=security-system
+
+[Service]
+ExecStart=/usr/local/bin/node /home/pi/security_system/main.js config.js
+Restart=always
+User=root
+Group=root
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/home/pi/security_system
+Restart=on-failure
+RestartSec=5s
+#StandardOutput=syslog
+#StandardError=syslog
+SyslogIdentifier=security-system
+
+[Install]
+WantedBy=multi-user.target
