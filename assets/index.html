@@ -5,13 +5,13 @@
 	<title>Document</title>
 	<link rel="stylesheet" href="index.css">
 	<script src="https://unpkg.com/vue/dist/vue.js"></script>
-	<script type="text/javascript" src="/Ajax.js"></script>
-	<script type="text/javascript" src="/info"></script>
+	<script type="text/javascript" src="Ajax.js"></script>
+	<script type="text/javascript" src="info"></script>
 </head>
 <body>
 	<div id="app">
-		<p><a href="/camera-1">Камера-1 (первый этаж)</a></p>
-		<p><a href="/camera-2">Камера-2 (второй этаж)</a></p>
+		<p><a href="camera-1">Камера-1 (первый этаж)</a></p>
+		<p><a href="camera-2">Камера-2 (второй этаж)</a></p>
 		<p>
 			Свет на первом этаже:
 			<label v-on:click="led">On<input type="radio" name="led_1" value="on" v-model="led_1"></label>
@@ -21,6 +21,12 @@
 			Свет на втором этаже:
 			<label v-on:click="led">On<input type="radio" name="led_2" value="on" v-model="led_2"></label>
 			<label v-on:click="led">Off<input type="radio" name="led_2" value="off" v-model="led_2"></label>
+		</p>
+		<p>
+			Режим охраны:
+			<label v-on:click="led">On<input type="radio" name="security_mode" value="on" v-model="security_mode"></label>
+			<label v-on:click="led">Off<input type="radio" name="security_mode" value="off" v-model="security_mode"></label>
+			<i>(автопостановка на охрану после 9 часов веера)</i>
 		</p>
 		<p>
 			<a href="/check-sms-balance">Проверка баланса на SMS-сервисе</a>
@@ -37,7 +43,20 @@
 		<p>
 			Датчики:
 		</p>
+		
+		<ul>
+			<li v-for="item in sensors">
+				{{ item.config.name }} (состояние: On) | <a v-bind:href="'sensors-journal/' + item.config.pin">журнал</a>
+			</li>
+		</ul>
+		<!-- <p>ИК датчик движения на 1м этаже: <a href="#">Журнал</a></p>
+		<p>ИК датчик движения на 2м этаже: <a href="#">Журнал</a></p>
+		<p>ИК датчик движения у дверей: <a href="#">Журнал</a></p>
+		<p>ИК датчик движения у ворот: <a href="#">Журнал</a></p> -->
+		<p>
+			<a href="motion-journal.html">Журнал обнаружеия движения по камерам</a>
+		</p>
 	</div>
-	<script type="text/javascript" src="/index.js"></script>
+	<script type="text/javascript" src="index.js"></script>
 </body>
 </html>

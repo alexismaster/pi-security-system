@@ -8,14 +8,18 @@
  */
 
 
-var path   = require("path");
-var fs     = require("fs");
-var logger = require("i-logger");
+var path    = require("path");
+var fs      = require("fs");
+var logger  = require("i-logger");
+var Journal = require("./src/Journal.js");
+var Sensor  = require("./src/Sensor.js");
 
 
 const SECOND     = 1000;
 const MINUTE     = 60*SECOND;
 const START_TIME = (new Date).valueOf();
+
+global.START_TIME = START_TIME;
 
 
 // Не укаазн конфиг
@@ -40,17 +44,15 @@ global.config = require(configPath);
 
 var pin = 23;
 
-if (!fs.existsSync("/sys/class/gpio/gpio"+pin+"/direction")) {
-  fs.writeFileSync("/sys/class/gpio/export", pin);
-  fs.writeFileSync("/sys/class/gpio/gpio"+pin+"/direction", "out");
-}
-
 
 global.App = {
-	image : null,   // Картинка с первой камеры
-	led_1 : false,  // Глобальное состояние освещения на первом этаже
-	led_2 : false,  // Глобальное состояние освещения на втором этаже
-	memory: null,
+	image  : null,   // Картинка с первой камеры
+	led_1  : false,  // Глобальное состояние освещения на первом этаже
+	led_2  : false,  // Глобальное состояние освещения на втором этаже
+	memory : null,
+
+	motionJournal: new Journal(100),
+	sensors: [],
 
 	isPi: (function () {
 		var result = ((require("os")).arch() === "arm");
@@ -62,8 +64,32 @@ global.App = {
 	getMemory: function () {
 		this.memory = (process.memoryUsage().rss / 1048576).toFixed(3);
 		return this.memory;
+	},
+
+	getGPIO: function () {
+		var mmodulePath = (this.isPi()) ? "./src/GPIO.js" : "./src/emulatorGPIO.js";
+		return require(mmodulePath);
 	}
 };
+
+
+/*// Инициализация порта
+if (App.isPi()) {
+	if (!fs.existsSync("/sys/class/gpio/gpio"+pin+"/direction")) {
+		fs.writeFileSync("/sys/class/gpio/export", pin);
+		fs.writeFileSync("/sys/class/gpio/gpio"+pin+"/direction", "out");
+	} else {
+		logger.log("pin already init");
+	}
+}
+else {
+	logger.warning("GPIO useg only ARM arch");
+}*/
+
+
+
+
+
 
 
 if (App.isPi()) {
@@ -76,26 +102,32 @@ if (App.isPi()) {
 	}
 
 	var iteration = 0;
+	var GPIO = App.getGPIO();
 
 	(function _blink () {
-		var GPIO  = require("./src/GPIO.js");
 		logger.log("start capture... memory usege:", App.getMemory() + " Mb");  
-		GPIO.ledOn(pin);
+		GPIO.pinOn(pin);
 
-	  if (++iteration > 1) camera0.getImage(function (image) {
+		if (++iteration > 1) camera0.getImage(function (image) {
 			if (App.image) App.image.release();
 			App.image = image;
 			//delete require.cache[require.resolve('./src/detector.js')];
 			var detector = require("./src/detector.js");
 			if (detector(image)) {
-				logger.log("motion detected!");
+				logger.warning("motion detected!");
+
+				App.motionJournal.add({
+					  "time"      : (new Date).valueOf()
+					, "iteration" : iteration
+					, "camera_id" : "camera0"
+				});
 			}
 			//image.release();
 		}); 
 
 		setTimeout(function () {
-			if (!App.led_1) GPIO.ledOff(pin);
-			setTimeout(_blink, MINUTE);
+			if (!App.led_1) GPIO.pinOff(pin);
+			setTimeout(_blink, 5*MINUTE);
 		}, 5*SECOND);
 
 	})();
@@ -111,73 +143,59 @@ else {
  */
 
 if (App.isPi()) {
-	var server = require("i-server").bind(80, "../../assets/");
+	var server = require("i-server").bind(global.config.webServer.port, "../../assets/");
 } else {
-	var server = require("./src/i-server").bind(80, "./../../assets/");
+	var server = require("./src/i-server").bind(global.config.webServer.port, "./../../assets/");
 }
 
-server.on("/camera-1", "GET", function (request, response) {
-	if (App.image) {
-		response.writeHead(200, {"Content-Type": "image/jpeg", "Cache-Control": "must-revalidate, max-age=0"});
-		response.end(App.image.toBuffer());
-		return;
+function addRoute(name, method, callback) {
+	if (typeof callback === "function") {
+		var action = callback.bind(server);
+	} else {
+		var action = require("./src/actions/"+name+".js").bind(server);
 	}
-	response.writeHead(200, {"Content-Type": "text/plain"});
-	response.end("image not found");
-});
+	server.on("/" + name, method, action);
+}
 
-server.on("/camera-2", "GET", function (request, response) {
-	if (!App.isPi() || typeof camera1 === "undefined") {
-		server.reply(response, "response response ");
-		return;
-	}
-	camera1.getImage(function (image) {
-		response.writeHead(200, {"Content-Type": "image/jpeg", "Cache-Control": "must-revalidate, max-age=0"});
-		response.end(image.toBuffer());
-		//image.release();
-	});
-});
-
-server.on("/check-sms-balance", "GET", function (request, response) {
-	var smsc = require("smsc-ru");
-	smsc.balance(global.config.sms.login, global.config.sms.password, function (balance) {
-		server.reply(response, "Баланс: " + balance + " руб");
-	});
-});
-
-/*
-server.on("/info", "GET", function (request, response) {
-	var info = {"led_1": (App.led_1 ? "on" : "off"), "led_2": "off", "memory": App.getMemory()};
-	server.reply(response, "var INFO = " + JSON.stringify(info));
-});
-*/
-server.on("/info", "GET", function (request, response) {
-    var os = require("os");
-    var info = {
-        "led_1"  : (App.led_1 ? "on" : "off")
-      , "led_2"  : "off"
-      , "memory" : App.getMemory()
-      , "uptime" : (new Date).valueOf() - START_TIME
-      , "freemem": os.freemem()
-      , "sensors": App.sensors
-    };
-    server.reply(response, "var INFO = " + JSON.stringify(info));
-});
+addRoute("camera-1", "GET");
+addRoute("camera-2", "GET");
+addRoute("check-sms-balance", "GET");
+addRoute("motion-journal", "GET");
+addRoute("info", "GET");
+addRoute("set-led", "POST");
+addRoute("status", "POST");
 
 
-server.on("/set-led", "POST", function (request, response) {
-	if (request.json && request.json.name && request.json.name === "led_1") {
-		var GPIO  = require("./src/GPIO.js");
-		if (request.json.value === "on") {
-			if (App.isPi()) GPIO.ledOn(pin);
-			App.led_1 = true;
-		} else {
-			if (App.isPi()) GPIO.ledOff(pin);
-			App.led_1 = false;
+
+/**
+ * Sensors
+ */
+
+if (global.config.sensors) {
+	App.sensors = global.config.sensors.map(function (settings) {
+
+		var sensor = new Sensor(settings);
+
+		if (settings.pin > 0) {
+			addRoute("sensors-journal/" + settings.pin, "GET", function (request, response) {
+				server.reply(response, sensor.getJournal());
+			});
 		}
-	}
-	server.reply(response, "/set-led");
-});
+
+		return sensor;
+	});
+}
+
+
+(function checkSensors() {
+	var result = App.sensors.map(function (sensor) {
+		if (sensor.check()) {
+			logger.warning("Сработал " + sensor.getName() + " !")
+		}
+	});
+
+	setTimeout(checkSensors, 5*SECOND);
+})();
 
 
 

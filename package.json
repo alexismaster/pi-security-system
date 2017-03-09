@@ -1,7 +1,7 @@
 {
   "name": "security_system",
-  "version": "0.0.3",
-  "release": "12.02.2017",
+  "version": "0.0.4",
+  "release": "10.03.2017",
   "description": "",
   "main": "index.js",
   "scripts": {
