@@ -69,7 +69,13 @@ global.App = {
 	getGPIO: function () {
 		var mmodulePath = (this.isPi()) ? "./src/GPIO.js" : "./src/emulatorGPIO.js";
 		return require(mmodulePath);
-	}
+	},
+
+	callPhone: function (message) {
+		//
+	},
+
+	sendSms: function (message) {}
 };
 
 
@@ -163,7 +169,10 @@ function addRoute(name, method, callback) {
 							request.connection.socket.remoteAddress;
 
 		App.http_journal.add({"action": name, "date": (new Date).valueOf(), "ip": ip.replace("::ffff:", "")});
-		action(request, response);
+		
+		if (/^camera-[0-9]/.test(name) || isAuthenticated(request, response)) {
+			action(request, response);
+		}
 	});
 }
 
@@ -175,6 +184,26 @@ addRoute("info", "GET");
 addRoute("set-led", "POST");
 addRoute("status", "POST");
 addRoute("http_journal", "GET");
+
+
+// Проверяет аутентификацию
+var isAuthenticated = function (req, res) {
+  var header   = req.headers['authorization'] || '',
+      token    = header.split(/\s+/).pop() || '',
+      auth     = new Buffer(token, 'base64').toString(),
+      parts    = auth.split(/:/),
+      username = parts[0],
+      password = parts[1];
+
+  if (username !== "admin" || password !== "admin") {
+    res.statusCode = 401;
+    res.setHeader('WWW-Authenticate', 'Basic realm="SERVER"');
+    res.end('Unauthorized');
+    return false;
+  } else {
+    return true;
+  }
+};
 
 
 

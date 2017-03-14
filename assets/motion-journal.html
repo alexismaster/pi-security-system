@@ -7,12 +7,22 @@
 	<script type="text/javascript" src="/Ajax.js"></script>
 </head>
 <body>
-	motion-journal.html
+	<div id="app">
+		<div v-for="i in journal">{{(new Date(i)).toString()}}</div>
+	</div>
 
 	<script type="text/javascript">
-	Ajax.get("/motion-journal", function (data) {
-		console.log(data);
+	var app = new Vue({
+		el: '#app',
+		data: {
+			journal: []
+		}
 	});
+
+	Ajax.get("/sensors-journal/24", function (data) {
+		app.journal = JSON.parse(data);
+	});
+
 	</script>
 </body>
 </html>
