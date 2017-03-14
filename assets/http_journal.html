@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>http_journal</title>
+	<script src="https://unpkg.com/vue/dist/vue.js"></script>
+	<script type="text/javascript" src="/Ajax.js"></script>
+</head>
+<body>
+
+<div id="app">
+	<div v-for="i in journal">{{(new Date(i.date)).toString()}} - {{i.action}} - {{i.ip}} </div>
+</div>
+
+<script type="text/javascript">
+	var app = new Vue({
+		el: '#app',
+		data: {
+			journal: []
+		}
+	});
+
+	Ajax.get("/http_journal", function (data) {
+		app.journal = JSON.parse(data);
+	});
+</script>
+
+</body>
+</html>

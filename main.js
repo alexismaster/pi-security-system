@@ -142,6 +142,8 @@ else {
  * web server
  */
 
+App.http_journal = new Journal(100);
+
 if (App.isPi()) {
 	var server = require("i-server").bind(global.config.webServer.port, "../../assets/");
 } else {
@@ -154,7 +156,15 @@ function addRoute(name, method, callback) {
 	} else {
 		var action = require("./src/actions/"+name+".js").bind(server);
 	}
-	server.on("/" + name, method, action);
+	server.on("/" + name, method, function (request, response) {
+		var ip =  request.headers['x-forwarded-for'] || 
+							request.connection.remoteAddress || 
+							request.socket.remoteAddress ||
+							request.connection.socket.remoteAddress;
+
+		App.http_journal.add({"action": name, "date": (new Date).valueOf(), "ip": ip.replace("::ffff:", "")});
+		action(request, response);
+	});
 }
 
 addRoute("camera-1", "GET");
@@ -164,6 +174,7 @@ addRoute("motion-journal", "GET");
 addRoute("info", "GET");
 addRoute("set-led", "POST");
 addRoute("status", "POST");
+addRoute("http_journal", "GET");
 
 
 
@@ -203,5 +214,5 @@ if (global.config.sensors) {
  * stop service
  */
 process.on("SIGTERM", function () {
-	console.log("SIGTERM");
+	logger.warning("SIGTERM");
 });
