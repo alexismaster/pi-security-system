@@ -5,6 +5,11 @@
  * 
  * sudo node main.js config.js.example
  * sudo node main.js config.js
+ * 
+ * 
+ * 
+ * https://developers.google.com/drive/v3/web/quickstart/nodejs
+ * 
  */
 
 
@@ -77,6 +82,9 @@ global.App = {
 
 	sendSms: function (message) {}
 };
+
+
+global.LINUX_USER = App.isPi() ? "pi" : "alexismaster";
 
 
 /*// Инициализация порта
@@ -171,6 +179,11 @@ function addRoute(name, method, callback) {
 		App.http_journal.add({"action": name, "date": (new Date).valueOf(), "ip": ip.replace("::ffff:", "")});
 		
 		if (/^camera-[0-9]/.test(name) || isAuthenticated(request, response)) {
+			// это позволяет копировать кода написанный мной ранее для express
+			response.set = function (headers) {
+				response.writeHead(200, headers);
+			};
+
 			action(request, response);
 		}
 	});
@@ -184,6 +197,13 @@ addRoute("info", "GET");
 addRoute("set-led", "POST");
 addRoute("status", "POST");
 addRoute("http_journal", "GET");
+
+addRoute("git-pull", "GET");
+addRoute("install-dependencies", "GET");
+addRoute("app-restart", "GET");
+addRoute("get-log", "GET");
+addRoute("git-log", "GET");
+addRoute("current-commit", "GET");
 
 
 // Проверяет аутентификацию

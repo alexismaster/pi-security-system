@@ -28,25 +28,17 @@
 			<label v-on:click="led">Off<input type="radio" name="security_mode" value="off" v-model="security_mode"></label>
 			<i>(автопостановка на охрану после 9 часов вчера)</i>
 		</p>
-		<p>
-			<a href="/check-sms-balance">Проверка баланса на SMS-сервисе</a>
-		</p>
-		<p>
-			Использование оперативной памяти: {{memory}} Mb
-		</p>
-		<p>
-			Время работы: {{uptime}}
-		</p>
-		<p>
-			Свободная оперативная память: {{freemem}}
-		</p>
+		<p><a href="/check-sms-balance">Проверка баланса на SMS-сервисе</a></p>
+		<p>Использование оперативной памяти: {{memory}} Mb</p>
+		<p>Время работы: {{uptime}}</p>
+		<p>Свободная оперативная память: {{freemem}}</p>
 		<p>
 			Датчики:
 		</p>
 		
 		<ul>
 			<li v-for="item in sensors">
-				{{ item.config.name }} (состояние: On) | <a v-bind:href="'sensors-journal/' + item.config.pin">журнал</a>
+				{{ item.config.name }} (состояние: On) | <a v-bind:href="'motion-journal.html?pin=' + item.config.pin">журнал</a>
 			</li>
 		</ul>
 		<!-- <p>ИК датчик движения на 1м этаже: <a href="#">Журнал</a></p>
@@ -56,6 +48,7 @@
 		<p>
 			<a href="motion-journal.html">Журнал обнаружеия движения по камерам</a>
 		</p>
+		<p><a href="continuous-integration.html">continuous integration</a></p>
 	</div>
 	<script type="text/javascript" src="index.js"></script>
 </body>
