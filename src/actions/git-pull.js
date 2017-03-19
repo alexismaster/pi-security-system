@@ -10,7 +10,7 @@ var iProcess = require("i-process");
 var gitPull = function (callback) {
 	var lines = [];
 	//var git   = new iProcess("git", ["pull", "origin", "master"]);
-	var git = new iProcess("sudo", ["-u", global.LINUX_USER, "git", "pull", "origin", "master"]);
+	var git = new iProcess("sudo", ["-u", global.LINUX_USER, "git", "pull", "origin", "develop"]);
 
 	git.on("line", function (line) {
 		lines.push(line);
