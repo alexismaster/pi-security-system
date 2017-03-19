@@ -6,7 +6,7 @@
  * sudo node main.js config.js.example
  * sudo node main.js config.js
  * 
- * 
+ * sudo service security-system restart
  * 
  * https://developers.google.com/drive/v3/web/quickstart/nodejs
  * 
