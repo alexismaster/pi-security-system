@@ -47,14 +47,12 @@ global.config = require(configPath);
 
 
 
-var pin = 23;
-
-
 global.App = {
 	image  : null,   // Картинка с первой камеры
 	led_1  : false,  // Глобальное состояние освещения на первом этаже
 	led_2  : false,  // Глобальное состояние освещения на втором этаже
 	memory : null,
+	security_mode: false,
 
 	motionJournal: new Journal(100),
 	sensors: [],
@@ -103,7 +101,7 @@ else {
 
 
 
-
+var pin = 23;
 
 
 if (App.isPi()) {
@@ -115,36 +113,36 @@ if (App.isPi()) {
 		});
 	}
 
-	var iteration = 0;
-	var GPIO = App.getGPIO();
+	// var iteration = 0;
+	// var GPIO = App.getGPIO();
 
-	(function _blink () {
-		logger.log("start capture... memory usege:", App.getMemory() + " Mb");  
-		GPIO.pinOn(pin);
+	// (function _blink () {
+	// 	logger.log("start capture... memory usege:", App.getMemory() + " Mb");  
+	// 	GPIO.pinOn(pin);
 
-		if (++iteration > 1) camera0.getImage(function (image) {
-			if (App.image) App.image.release();
-			App.image = image;
-			//delete require.cache[require.resolve('./src/detector.js')];
-			var detector = require("./src/detector.js");
-			if (detector(image)) {
-				logger.warning("motion detected!");
+	// 	if (++iteration > 1) camera0.getImage(function (image) {
+	// 		if (App.image) App.image.release();
+	// 		App.image = image;
+	// 		//delete require.cache[require.resolve('./src/detector.js')];
+	// 		var detector = require("./src/detector.js");
+	// 		if (detector(image)) {
+	// 			logger.warning("motion detected!");
 
-				App.motionJournal.add({
-					  "time"      : (new Date).valueOf()
-					, "iteration" : iteration
-					, "camera_id" : "camera0"
-				});
-			}
-			//image.release();
-		}); 
+	// 			App.motionJournal.add({
+	// 				  "time"      : (new Date).valueOf()
+	// 				, "iteration" : iteration
+	// 				, "camera_id" : "camera0"
+	// 			});
+	// 		}
+	// 		//image.release();
+	// 	});
 
-		setTimeout(function () {
-			if (!App.led_1) GPIO.pinOff(pin);
-			setTimeout(_blink, 5*MINUTE);
-		}, 5*SECOND);
+	// 	setTimeout(function () {
+	// 		if (!App.led_1) GPIO.pinOff(pin);
+	// 		setTimeout(_blink, 5*MINUTE);
+	// 	}, 5*SECOND);
 
-	})();
+	// })();
 }
 else {
 	logger.warning("Код выполняется не на малине. Камеры и GPIO работать не будут.");

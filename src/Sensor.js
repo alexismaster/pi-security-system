@@ -16,13 +16,14 @@ var Sensor = (function () {
 		},
 		check: function () {
 			if (this.config.pin > 0) {
-				var GPIO = App.getGPIO();
-				var data = GPIO.pinGet(this.config.pin);
-				logger.debug(this.config.name + ": " + data);
-				if (data) {
-					this.journal.add((new Date).valueOf());
+				var GPIO  = App.getGPIO();
+				var value = GPIO.pinGet(this.config.pin);
+				logger.debug(this.config.name + ": " + value);
+				if (value !== this.journal.last().value) {
+					console.log(typeof value, typeof this.journal.last().value, value, this.journal.last().value)
+					this.journal.add({"time": (new Date).valueOf(), "value": value});
 				}
-				return data;
+				return value;
 			} else {
 				logger.debug(this.config.name + " - disabled");
 				return 0;

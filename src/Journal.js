@@ -36,10 +36,15 @@ var Journal = (function () {
 		size: function () {
 			return this._data.length;
 		},
-
 		// Число операций записи
 		count: function () {
 			return this._counter;
+		},
+		last: function () {
+			if (this._data.length) {
+				return this._data[this._data.length - 1];
+			}
+			return {}
 		}
 	};
 

@@ -11,7 +11,7 @@ module.exports = function (request, response) {
     , "uptime" : (new Date).valueOf() - START_TIME
     , "freemem": os.freemem()
     , "sensors": App.sensors
-    , "security_mode": "on"
+    , "security_mode": (global.App.security_mode) ? "on" : "off"
   };
   server.reply(response, "var INFO = " + JSON.stringify(info));
 };
