@@ -9,9 +9,13 @@ module.exports = function Camera(cam) {
 	camera.setWidth(cam.size[0]);
 	camera.setHeight(cam.size[1]);
 
+	var journal = new (require("./Journal.js"))(100);
+
 	// https://01.org/developerjourney/problems-camera-lag
 	this.getImage = function (callback) {
 		var n = 0;
+
+		journal.add({"time": (new Date).valueOf()});
 
 		(function _read() {
 			camera.read(function (error, image) {
@@ -23,6 +27,10 @@ module.exports = function Camera(cam) {
 				}
 			});
 		})();
+	};
+
+	this.getJournal = function () {
+		return journal.getAllJson();
 	};
 }
 
