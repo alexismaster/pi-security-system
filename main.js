@@ -116,10 +116,10 @@ if (App.isPi()) {
 	var GPIO = App.getGPIO();
 	GPIO.pinOff(4);
 
-	setInterval(function () {
-		GPIO.pinOn(4);
-		setTimeout(function () { GPIO.pinOff(4) }, 2000);
-	}, 10*1000);
+	//setInterval(function () {
+	//	GPIO.pinOn(4);
+	//	setTimeout(function () { GPIO.pinOff(4) }, 2000);
+	//}, 10*1000);
 
 	// var iteration = 0;
 	// var GPIO = App.getGPIO();

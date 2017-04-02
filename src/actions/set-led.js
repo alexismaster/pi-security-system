@@ -15,6 +15,20 @@ module.exports = function (request, response) {
 			App.led_1 = false;
 		}
 	}
+
+  if (App.isPi()) {
+    if (request.json && request.json.name && request.json.name === "led_2") {
+    var GPIO  = require("./../GPIO.js");
+
+      if (request.json.value === "on") {
+        GPIO.ledOn(4);
+        App.led_2 = true;
+      } else {
+        GPIO.ledOff(4);
+       App.led_2 = false;
+      }
+    }
+  }
 	
 	server.reply(response, "/set-led");
 };
