@@ -253,10 +253,82 @@ if (global.config.sensors) {
 }
 
 
+function toTranslit(text) {
+	return text.replace(/([а-яё])|([\s_-])|([^a-z\d])/gi,
+	function (all, ch, space, words, i) {
+		if (space || words) {
+			return space ? ' ' : '';
+		}
+		var code = ch.charCodeAt(0),
+			index = code == 1025 || code == 1105 ? 0 :
+				code > 1071 ? code - 1071 : code - 1039,
+			t = ['yo', 'a', 'b', 'v', 'g', 'd', 'e', 'zh',
+						'z', 'i', 'y', 'k', 'l', 'm', 'n', 'o', 'p',
+						'r', 's', 't', 'u', 'f', 'h', 'c', 'ch', 'sh',
+						'shch', '', 'y', '', 'e', 'yu', 'ya'
+			];
+		return t[index];
+	});
+}
+
+
+
+// Выполняет fn не чаще чем раз в день
+var callOnceDay = (function () {
+
+	var __last_call_by_key = {};
+
+	return function (key, fn) {
+		var current_date = (new Date).toDateString().split(" ").join("_");
+		if (!__last_call_by_key[key] || __last_call_by_key[key] !== current_date) {
+			if (fn instanceof Function) {
+				fn(true);
+			}
+			__last_call_by_key[key] = current_date;
+		} else {
+			logger.debug("Действие с ключём \""+key+"\" уже выполнялось.");
+		}
+	};
+})();
+
+
+function callPhone(sensor) {
+	var smsc = require("smsc-ru");
+	
+	callOnceDay("call_phone", function () {
+		// Проверка баланса
+		smsc.balance(global.config.sms.login, global.config.sms.password, function (balance) {
+			var message = toTranslit("cработал " + sensor.getName() + "; Баланс: " + balance);
+			// Отправка сообщения
+			smsc.sms(global.config.sms.login, global.config.sms.password, global.config.admin_phone, message, function (error) {
+				if (error) {
+					logger.error(error);
+				}
+			});
+		});
+	});
+}
+
+
+function getTime() {
+	//var hours = (new Date).getHours() + (new Date).getMinutes()/0.6/100;
+	var hours = (new Date).getHours() + (new Date).getMinutes()/100;
+	return hours;
+}
+
+
+
+
 (function checkSensors() {
 	var result = App.sensors.map(function (sensor) {
 		if (sensor.check()) {
-			logger.warning("Сработал " + sensor.getName() + " !")
+			logger.warning("Сработал " + sensor.getName() + "!");
+			
+			if (App.isPi() && getTime() < 3.30) { // не позже пол четвёртого
+				callPhone(sensor);
+			} else {
+				logger.debug("Сообщение отправлено не будет");
+			}
 		}
 	});
 

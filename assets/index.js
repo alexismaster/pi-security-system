@@ -12,11 +12,12 @@ var app = new Vue({
 		security_mode: "on",
 	},
 	methods: {
+		// Включение/выключение света
 		led: function (event) {
 			var btn = event.target;
-			if (btn.tagName === 'INPUT') {
-				var json = {name: btn.getAttribute("name"), value: btn.getAttribute("value")};
-				Ajax.post("/set-led", json, function (data) {
+			if (btn.tagName === "INPUT") {
+				var json = {"name": btn.getAttribute("name"), "value": btn.getAttribute("value")};
+				Ajax.post("set-led", json, function (data) {
 					console.log(data);
 				});
 			}
@@ -28,10 +29,11 @@ var app = new Vue({
 if (typeof INFO === "object") {
 	for (var opt in INFO) if (typeof app[opt] !== "undefined") {
 		if (opt === "uptime") {
-			INFO[opt] = (INFO[opt]/1000/60).toFixed(0) + ' мин';
+			INFO[opt] = (INFO[opt]/1000/60).toFixed(0) + " мин";
 		} else if (opt === "freemem") {
-			INFO[opt] = (INFO[opt]/1048576).toFixed(3) + ' Мб';
+			INFO[opt] = (INFO[opt]/1048576).toFixed(3) + " Мб";
 		} else {
+			//...
 		}
 
 		app[opt] = INFO[opt];
